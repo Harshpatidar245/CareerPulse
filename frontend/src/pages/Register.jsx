@@ -356,7 +356,7 @@ const Register = () => {
       setOtpLoading(true);
       setError('');
 
-      const response = await axios.post('/auth/verify-registration-otp', { email, otp });
+      const response = await axios.post('/auth/verify-email-otp', { email, otp });
 
       if (response.data.success) {
         setOtpVerified(true);
