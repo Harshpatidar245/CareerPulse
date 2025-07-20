@@ -2911,9 +2911,9 @@ h6 {
         width: calc(100% - 2rem)
     }
 
-    .dashboard-grid {
+    /* .dashboard-grid {
         grid-template-columns: repeat(auto-fit,minmax(150px,1fr))
-    }
+    } */
 
     .job-card-actions {
         flex-direction: column;
