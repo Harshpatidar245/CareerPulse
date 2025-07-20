@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-import Toast from "../components/Toast"; // adjust path as needed
 
 // Google Login Button
 // const GoogleLoginButton = () => {
@@ -27,13 +26,10 @@ const Login = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [loginMode, setLoginMode] = useState("password"); // 'password', 'email_otp', 'phone_otp'
   const [otpTimer, setOtpTimer] = useState(0);
-  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const showFlash = (message, type = "success") => {
-    setToast({ show: true, message, type });
-  };
+
 
   // Timer countdown for OTP resend
   useEffect(() => {
@@ -327,9 +323,6 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      {toast.show && (
-        <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
-      )}
       
       <div className="auth-card">
         <div className="auth-header">
