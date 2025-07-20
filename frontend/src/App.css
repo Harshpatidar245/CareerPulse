@@ -1072,6 +1072,14 @@ h6 {
   font-weight: 500;
   color: var(--gray-700);
 } */
+ @media (max-width: 428px) {
+  /* .dashboard-actions {
+    flex-direction: column;
+  } */
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
 
 @media (max-width: 768px) {
   .dashboard-actions {
