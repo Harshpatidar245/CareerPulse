@@ -71,14 +71,12 @@ const Login = () => {
     const email = formData.email.trim().toLowerCase();
     if (!email) {
       setError("Please enter your email first.");
-      showFlash("Please enter your email first.", "error");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address.");
-      showFlash("Please enter a valid email address.", "error");
       return;
     }
 
@@ -93,13 +91,11 @@ const Login = () => {
         setOtpSent(true);
         setOtpTimer(60);
         setSuccess("OTP sent to your email successfully!");
-        showFlash("OTP sent to your email successfully!");
       }
     } catch (err) {
       console.error("Send OTP error:", err);
       const errorMessage = err.response?.data?.message || "Failed to send OTP.";
       setError(errorMessage);
-      showFlash(errorMessage, "error");
     } finally {
       setOtpLoading(false);
     }
@@ -109,14 +105,12 @@ const Login = () => {
     const phone = formData.phone.trim();
     if (!phone) {
       setError("Please enter your phone number first.");
-      showFlash("Please enter your phone number first.", "error");
       return;
     }
 
     const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
     if (!phoneRegex.test(phone.replace(/\D/g, ""))) {
       setError("Please enter a valid Indian phone number.");
-      showFlash("Please enter a valid Indian phone number.", "error");
       return;
     }
 
@@ -134,19 +128,16 @@ const Login = () => {
         setOtpSent(true);
         setOtpTimer(60);
         setSuccess("OTP sent to your phone successfully!");
-        showFlash("OTP sent to your phone successfully!");
         
         // Show debug OTP in development
         if (response.data.debug_otp) {
           setSuccess(`OTP sent! Debug OTP: ${response.data.debug_otp}`);
-          showFlash(`OTP sent! Debug OTP: ${response.data.debug_otp}`);
         }
       }
     } catch (err) {
       console.error("Send phone OTP error:", err);
       const errorMessage = err.response?.data?.message || "Failed to send OTP.";
       setError(errorMessage);
-      showFlash(errorMessage, "error");
     } finally {
       setOtpLoading(false);
     }
@@ -158,13 +149,11 @@ const Login = () => {
 
     if (!email || !otp) {
       setError("Email and OTP are required.");
-      showFlash("Email and OTP are required.", "error");
       return;
     }
 
     if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       setError("OTP must be exactly 6 digits.");
-      showFlash("OTP must be exactly 6 digits.", "error");
       return;
     }
 
@@ -178,7 +167,6 @@ const Login = () => {
         const { token, user } = response.data;
         login(token, user);
         setSuccess("Login successful! Redirecting...");
-        showFlash("Login successful!");
         
         // Redirect based on user role and profile completeness
         setTimeout(() => {
@@ -193,7 +181,6 @@ const Login = () => {
       console.error("OTP verification error:", err);
       const errorMessage = err.response?.data?.message || "OTP verification failed.";
       setError(errorMessage);
-      showFlash(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -205,13 +192,11 @@ const Login = () => {
 
     if (!phone || !otp) {
       setError("Phone number and OTP are required.");
-      showFlash("Phone number and OTP are required.", "error");
       return;
     }
 
     if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       setError("OTP must be exactly 6 digits.");
-      showFlash("OTP must be exactly 6 digits.", "error");
       return;
     }
 
@@ -229,7 +214,6 @@ const Login = () => {
         const { token, user } = response.data;
         login(token, user);
         setSuccess("Login successful! Redirecting...");
-        showFlash("Login successful!");
         
         // Redirect based on user role and profile completeness
         setTimeout(() => {
@@ -244,7 +228,6 @@ const Login = () => {
       console.error("Phone OTP verification error:", err);
       const errorMessage = err.response?.data?.message || "OTP verification failed.";
       setError(errorMessage);
-      showFlash(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -256,7 +239,6 @@ const Login = () => {
 
     if (!email || !password) {
       setError("Email and password are required.");
-      showFlash("Email and password are required.", "error");
       return;
     }
 
@@ -267,7 +249,6 @@ const Login = () => {
       const result = await login(email, password);
       if (result.success) {
         setSuccess("Login successful! Redirecting...");
-        showFlash("Login successful!");
         setTimeout(() => {
           if (result.user.role === 'job_seeker' && (!result.user.preferences || !result.user.preferences.jobRoles)) {
             navigate("/preferences");
@@ -277,11 +258,9 @@ const Login = () => {
         }, 1500);
       } else {
         setError(result.error || "Invalid credentials");
-        showFlash(result.error || "Invalid credentials", "error");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
-      showFlash("Login failed. Please try again.", "error");
     } finally {
       setLoading(false);
     }
