@@ -2,41 +2,16 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
+import Toast from "../components/Toast"; // adjust path as needed
 
 // Google Login Button
-const GoogleLoginButton = () => {
-  const handleGoogleLogin = () => {
-    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/auth/google`;
-  };
+// const GoogleLoginButton = () => {
+//   const handleGoogleLogin = () => {
+//     window.location.href = "http://localhost:5000/api/auth/google";
+//   };
 
-  return (
-    <button
-      type="button"
-      className="btn btn-google w-100 mb-4"
-      onClick={handleGoogleLogin}
-    >
-      <svg className="google-icon" width="20" height="20" viewBox="0 0 24 24">
-        <path
-          fill="#4285F4"
-          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-        />
-        <path
-          fill="#34A853"
-          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-        />
-        <path
-          fill="#FBBC05"
-          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-        />
-        <path
-          fill="#EA4335"
-          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-        />
-      </svg>
-      Continue with Google
-    </button>
-  );
-};
+
+// };
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -48,12 +23,17 @@ const Login = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false); // Separate loading state for OTP operations
   const [otpSent, setOtpSent] = useState(false);
   const [loginMode, setLoginMode] = useState("password"); // 'password', 'email_otp', 'phone_otp'
   const [otpTimer, setOtpTimer] = useState(0);
-
+  const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  const showFlash = (message, type = "success") => {
+    setToast({ show: true, message, type });
+  };
 
   // Timer countdown for OTP resend
   useEffect(() => {
@@ -95,17 +75,19 @@ const Login = () => {
     const email = formData.email.trim().toLowerCase();
     if (!email) {
       setError("Please enter your email first.");
+      showFlash("Please enter your email first.", "error");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address.");
+      showFlash("Please enter a valid email address.", "error");
       return;
     }
 
     try {
-      setLoading(true);
+      setOtpLoading(true);
       setError("");
       setSuccess("");
 
@@ -115,13 +97,15 @@ const Login = () => {
         setOtpSent(true);
         setOtpTimer(60);
         setSuccess("OTP sent to your email successfully!");
+        showFlash("OTP sent to your email successfully!");
       }
     } catch (err) {
       console.error("Send OTP error:", err);
       const errorMessage = err.response?.data?.message || "Failed to send OTP.";
       setError(errorMessage);
+      showFlash(errorMessage, "error");
     } finally {
-      setLoading(false);
+      setOtpLoading(false);
     }
   };
 
@@ -129,17 +113,19 @@ const Login = () => {
     const phone = formData.phone.trim();
     if (!phone) {
       setError("Please enter your phone number first.");
+      showFlash("Please enter your phone number first.", "error");
       return;
     }
 
     const phoneRegex = /^(\+91|91)?[6-9]\d{9}$/;
     if (!phoneRegex.test(phone.replace(/\D/g, ""))) {
       setError("Please enter a valid Indian phone number.");
+      showFlash("Please enter a valid Indian phone number.", "error");
       return;
     }
 
     try {
-      setLoading(true);
+      setOtpLoading(true);
       setError("");
       setSuccess("");
 
@@ -152,18 +138,21 @@ const Login = () => {
         setOtpSent(true);
         setOtpTimer(60);
         setSuccess("OTP sent to your phone successfully!");
+        showFlash("OTP sent to your phone successfully!");
         
         // Show debug OTP in development
         if (response.data.debug_otp) {
           setSuccess(`OTP sent! Debug OTP: ${response.data.debug_otp}`);
+          showFlash(`OTP sent! Debug OTP: ${response.data.debug_otp}`);
         }
       }
     } catch (err) {
       console.error("Send phone OTP error:", err);
       const errorMessage = err.response?.data?.message || "Failed to send OTP.";
       setError(errorMessage);
+      showFlash(errorMessage, "error");
     } finally {
-      setLoading(false);
+      setOtpLoading(false);
     }
   };
 
@@ -173,11 +162,13 @@ const Login = () => {
 
     if (!email || !otp) {
       setError("Email and OTP are required.");
+      showFlash("Email and OTP are required.", "error");
       return;
     }
 
     if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       setError("OTP must be exactly 6 digits.");
+      showFlash("OTP must be exactly 6 digits.", "error");
       return;
     }
 
@@ -191,6 +182,7 @@ const Login = () => {
         const { token, user } = response.data;
         login(token, user);
         setSuccess("Login successful! Redirecting...");
+        showFlash("Login successful!");
         
         // Redirect based on user role and profile completeness
         setTimeout(() => {
@@ -205,6 +197,7 @@ const Login = () => {
       console.error("OTP verification error:", err);
       const errorMessage = err.response?.data?.message || "OTP verification failed.";
       setError(errorMessage);
+      showFlash(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -216,11 +209,13 @@ const Login = () => {
 
     if (!phone || !otp) {
       setError("Phone number and OTP are required.");
+      showFlash("Phone number and OTP are required.", "error");
       return;
     }
 
     if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
       setError("OTP must be exactly 6 digits.");
+      showFlash("OTP must be exactly 6 digits.", "error");
       return;
     }
 
@@ -238,6 +233,7 @@ const Login = () => {
         const { token, user } = response.data;
         login(token, user);
         setSuccess("Login successful! Redirecting...");
+        showFlash("Login successful!");
         
         // Redirect based on user role and profile completeness
         setTimeout(() => {
@@ -252,6 +248,7 @@ const Login = () => {
       console.error("Phone OTP verification error:", err);
       const errorMessage = err.response?.data?.message || "OTP verification failed.";
       setError(errorMessage);
+      showFlash(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -263,6 +260,7 @@ const Login = () => {
 
     if (!email || !password) {
       setError("Email and password are required.");
+      showFlash("Email and password are required.", "error");
       return;
     }
 
@@ -273,6 +271,7 @@ const Login = () => {
       const result = await login(email, password);
       if (result.success) {
         setSuccess("Login successful! Redirecting...");
+        showFlash("Login successful!");
         setTimeout(() => {
           if (result.user.role === 'job_seeker' && (!result.user.preferences || !result.user.preferences.jobRoles)) {
             navigate("/preferences");
@@ -282,9 +281,11 @@ const Login = () => {
         }, 1500);
       } else {
         setError(result.error || "Invalid credentials");
+        showFlash(result.error || "Invalid credentials", "error");
       }
     } catch (err) {
       setError("Login failed. Please try again.");
+      showFlash("Login failed. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -312,6 +313,8 @@ const Login = () => {
     setFormData({ email: "", phone: "", password: "", otp: "" });
     setError("");
     setSuccess("");
+    setLoading(false);
+    setOtpLoading(false);
   };
 
   const resendOtp = () => {
@@ -324,6 +327,10 @@ const Login = () => {
 
   return (
     <div className="auth-container">
+      {toast.show && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
+      )}
+      
       <div className="auth-card">
         <div className="auth-header">
           <div className="auth-logo">
@@ -349,11 +356,11 @@ const Login = () => {
           )}
 
           <form onSubmit={handleSubmit} className="auth-form">
-            <GoogleLoginButton />
+            {/* <GoogleLoginButton /> */}
             
-            <div className="divider">
+            {/* <div className="divider">
               <span>or continue with</span>
-            </div>
+            </div> */}
 
             {/* Login Mode Selection */}
             <div className="login-mode-selector">
@@ -361,6 +368,7 @@ const Login = () => {
                 type="button"
                 className={`mode-btn ${loginMode === "password" ? "active" : ""}`}
                 onClick={() => toggleLoginMode("password")}
+                disabled={loading}
               >
                 <span className="mode-icon">🔑</span>
                 Password
@@ -369,6 +377,7 @@ const Login = () => {
                 type="button"
                 className={`mode-btn ${loginMode === "email_otp" ? "active" : ""}`}
                 onClick={() => toggleLoginMode("email_otp")}
+                disabled={loading}
               >
                 <span className="mode-icon">📧</span>
                 Email OTP
@@ -377,6 +386,7 @@ const Login = () => {
                 type="button"
                 className={`mode-btn ${loginMode === "phone_otp" ? "active" : ""}`}
                 onClick={() => toggleLoginMode("phone_otp")}
+                disabled={loading}
               >
                 <span className="mode-icon">📱</span>
                 Phone OTP
@@ -398,6 +408,7 @@ const Login = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
+                  disabled={loading}
                   required
                 />
               </div>
@@ -418,6 +429,7 @@ const Login = () => {
                   placeholder="+91 XXXXXXXXXX"
                   value={formData.phone}
                   onChange={handleChange}
+                  disabled={loading}
                   required
                 />
               </div>
@@ -438,6 +450,7 @@ const Login = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
+                  disabled={loading}
                   required
                 />
                 <div className="form-help">
@@ -466,6 +479,7 @@ const Login = () => {
                       onChange={handleOtpChange}
                       placeholder="000000"
                       maxLength="6"
+                      disabled={loading}
                       required
                     />
                     <button
@@ -476,27 +490,31 @@ const Login = () => {
                           ? handleSendEmailOtp
                           : handleSendPhoneOtp
                       }
-                      disabled={loading || otpTimer > 0}
+                      disabled={otpLoading || otpTimer > 0 || loading}
                     >
-                      {otpTimer > 0
-                        ? `${otpTimer}s`
-                        : otpSent
-                        ? "Resend"
-                        : "Send OTP"}
+                      {otpLoading ? (
+                        <span className="spinner" style={{ width: '16px', height: '16px' }}></span>
+                      ) : otpTimer > 0 ? (
+                        `${otpTimer}s`
+                      ) : otpSent ? (
+                        "Resend"
+                      ) : (
+                        "Send OTP"
+                      )}
                     </button>
                   </div>
                 </div>
 
-                {otpSent && otpTimer === 0 && (
+                {otpSent && otpTimer === 0 && !loading && (
                   <div className="resend-section">
                     <p className="resend-text">Didn't receive the code?</p>
                     <button
                       type="button"
                       className="resend-btn"
                       onClick={resendOtp}
-                      disabled={loading}
+                      disabled={otpLoading}
                     >
-                      Resend OTP
+                      {otpLoading ? "Sending..." : "Resend OTP"}
                     </button>
                   </div>
                 )}
@@ -511,7 +529,9 @@ const Login = () => {
               {loading ? (
                 <span className="loading-spinner">
                   <span className="spinner"></span>
-                  Processing...
+                  {loginMode === "email_otp" ? "Verifying..." : 
+                   loginMode === "phone_otp" ? "Verifying..." : 
+                   "Signing in..."}
                 </span>
               ) : loginMode === "email_otp" ? (
                 "Verify Email OTP"

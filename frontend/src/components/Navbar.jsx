@@ -1,25 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
     logout();
+    setIsMobileMenuOpen(false);
   };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  };
+
+  // Close mobile menu when route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <nav className="navbar">
-      <div className="navbar-content d-flex justify-content-between align-items-center">
+      <div className="navbar-content">
         <Link to="/" className="navbar-brand">
           JobPortal
         </Link>
 
-        <div className="navbar-nav d-flex align-items-center gap-3">
+        {/* Desktop Navigation */}
+        <div className="navbar-nav desktop-nav">
           {user ? (
             <>
               <Link
@@ -28,7 +44,7 @@ const Navbar = () => {
               >
                 Dashboard
               </Link>
-
+              
               {user.role === 'job_poster' && (
                 <>
                   <Link
@@ -51,7 +67,7 @@ const Navbar = () => {
                   </Link>
                 </>
               )}
-
+              
               {user.role === 'job_seeker' && (
                 <>
                   <Link
@@ -74,12 +90,12 @@ const Navbar = () => {
                   </Link>
                 </>
               )}
-
+              
               <Link
                 to="/profile"
                 className={`nav-link ${isActive('/profile') ? 'active' : ''}`}
               >
-                <div className="nav-profile d-flex align-items-center gap-2">
+                <div className="nav-profile">
                   {user.profilePhoto ? (
                     <img
                       src={user.profilePhoto.startsWith('http') ? user.profilePhoto : `${import.meta.env.VITE_API_BASE_URL}${user.profilePhoto}`}
@@ -91,31 +107,90 @@ const Navbar = () => {
                       {user.name?.charAt(0)?.toUpperCase() || '?'}
                     </div>
                   )}
-                  <span>{user.name}</span>
+                  <span className="nav-username">{user.name}</span>
                 </div>
               </Link>
-
+              
               <button className="btn btn-secondary btn-sm" onClick={handleLogout}>
                 Logout
               </button>
             </>
           ) : (
-            <>
-              <Link
-                to="/login"
-                className={`nav-link ${isActive('/login') ? 'active' : ''}`}
-              >
+            // Desktop Auth Buttons - Only show on desktop
+            <div className="auth-buttons">
+              <Link to="/login" className="btn-login">
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="btn btn-primary btn-sm"
-              >
+              <Link to="/register" className="btn-register">
                 Register
               </Link>
-            </>
+            </div>
           )}
         </div>
+
+        {/* Mobile Hamburger Button */}
+        <button
+          className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`}
+          onClick={toggleMobileMenu}
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobileMenuOpen && (
+          <div className="mobile-dropdown">
+            {user ? (
+              <>
+                <Link to="/dashboard" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                  Dashboard
+                </Link>
+                {user.role === 'job_poster' && (
+                  <>
+                    <Link to="/create-job" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                      Create Job
+                    </Link>
+                    <Link to="/job-management" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                      Manage Jobs
+                    </Link>
+                    <Link to="/manage-applications" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                      Applications
+                    </Link>
+                  </>
+                )}
+                {user.role === 'job_seeker' && (
+                  <>
+                    <Link to="/browse-jobs" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                      Browse Jobs
+                    </Link>
+                    <Link to="/preferences" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                      Preferences
+                    </Link>
+                    <Link to="/activity" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                      Activity
+                    </Link>
+                  </>
+                )}
+                <Link to="/profile" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                  Profile
+                </Link>
+                <button className="mobile-dropdown-link" onClick={handleLogout}>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="mobile-dropdown-link" onClick={closeMobileMenu}>
+                  Login
+                </Link>
+                <Link to="/register" className="mobile-dropdown-link register" onClick={closeMobileMenu}>
+                  Register
+                </Link>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </nav>
   );
