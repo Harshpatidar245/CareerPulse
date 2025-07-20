@@ -236,8 +236,8 @@ const JobManagement = () => {
                 <div className="mb-3">
                   <strong>Salary:</strong>
                   <span className="text-success ms-2">
-                    ${selectedJob.salary.min.toLocaleString()}
-                    {selectedJob.salary.max && ` - $${selectedJob.salary.max.toLocaleString()}`}
+                    ₹{selectedJob.salary.min.toLocaleString()}
+                    {selectedJob.salary.max && ` - ₹${selectedJob.salary.max.toLocaleString()}`}
                   </span>
                 </div>
               )}
