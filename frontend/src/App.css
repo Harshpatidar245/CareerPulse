@@ -1061,17 +1061,17 @@ h6 {
   margin-top: 1rem;
 }
 
-.job-item {
+/* .job-item {
   background: var(--gray-50);
   border-radius: var(--radius-md);
   padding: 0.5rem 1rem;
   margin-bottom: 0.5rem;
-  display: flex;
+  display: flow;
   justify-content: space-between;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--gray-700);
-}
+} */
 
 @media (max-width: 768px) {
   .dashboard-actions {
@@ -1864,6 +1864,8 @@ h6 {
   box-shadow: var(--shadow-lg);
   transition: all var(--transition-normal);
   border: 1px solid var(--gray-100);
+  display: inline-grid;
+
 }
 
 .job-item:hover {
